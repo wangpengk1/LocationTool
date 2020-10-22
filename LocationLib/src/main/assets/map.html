@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <!--    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> -->
+    <meta http-equiv="Content-Type" content="text/html;charset=gb2312">
+    <meta id="viewport" name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,minimal-ui">
+    <title>Hello, World</title>
+    <style type="text/css">
+		html{height:100%}
+		body{height:100%;margin:0px;padding:0px}
+		#container{height:100%}
+	</style>
+    <script type="text/javascript" src="http://api.map.baidu.com/api?v=3.0&ak=lWC5WZ8jQnNHKQhdfoGRoXUd53kzF4Pm"></script>
+	<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lodash@4.13.1/lodash.min.js"></script>
+    <script type="text/javascript">
+		var map = new Object;
+		var last_center = null;
+		var SearchNearby = _.debounce(searchLocal,1000);
+		function loadMap()
+		{
+			map = new BMap.Map("container");
+			var point = null;
+			// 创建地图实例
+			if(window.localStorage.getItem("lng")!=undefined && window.localStorage.getItem("lng"))
+			{
+				point = new BMap.Point(window.localStorage.getItem("lng"), window.localStorage.getItem("lat"));
+				map.centerAndZoom(point, 17);
+			}else
+			{
+				point = new BMap.Point(116.404, 39.915);
+				map.centerAndZoom(point, 17);
+			}
+			
+			map.addEventListener("zoomstart",function(){
+				last_center = map.getCenter();
+			})
+			
+			map.addEventListener("zoomend",function(){
+				map.setCenter(last_center);
+			})
+			
+			map.addEventListener("dragend",function(){
+				SearchNearby();
+			})
+			
+			
+
+			var geolocationControl = new BMap.GeolocationControl();
+			geolocationControl.addEventListener("locationSuccess",onLocationSuccess);
+			geolocationControl.addEventListener("locationError",onLocationFailed);
+			map.addControl(geolocationControl);
+			geolocationControl.location();
+			
+				
+		}
+		
+		
+		function onLocationSuccess(e)
+		{
+			var point = e.point;
+			window.localStorage.setItem("lng",point.lng);
+			window.localStorage.setItem("lat",point.lat);
+			map.centerAndZoom(e.point,18);
+			SearchNearby();
+		}
+		
+		function onLocationFailed(e)
+		{
+			alert("定位失败");
+		}
+		
+	
+		
+		function searchLocal()
+		{
+			var options = {
+				onSearchComplete: function(results){
+					if (local.getStatus() == BMAP_STATUS_SUCCESS){
+						var s = [];
+						for(var j=0;j<results.length;++j)
+						{
+							let key = results[j];
+							for (var i = 0; i < key.getCurrentNumPois(); i ++){
+								//s.push(key.getPoi(i).title + ", " + key.getPoi(i).address+" "+map.getDistance(map.getCenter(),key.getPoi(i).point));
+								s.push({title:key.getPoi(i).title,addr:key.getPoi(i).address,distance:map.getDistance(map.getCenter(),key.getPoi(i).point)});
+							}
+							//document.getElementById("r-result").innerHTML = s.join("<br/>");
+						}
+						window.bridge.searchNearby(JSON.stringify(s));
+					}else {
+						alert("附近没有搜索到任何参照物")
+						window.bridge.searchNearby("");
+					}
+				},
+				pageCapacity:10
+			};
+			var local = new BMap.LocalSearch(map, options);
+			console.log(local.getPageCapacity());
+			var mykeys = ["购物","生活服务","教育培训","公司企业","房地产","行政地标","交通设施","休闲娱乐","医疗","酒店"];
+			local.searchNearby(mykeys,map.getCenter(),1000);
+			window.bridge.beginSearch();
+		}
+		
+		function showAlert(val)
+		{
+			alert(val);
+		}
+		
+	</script>
+</head>
+
+<body onload="loadMap()">
+<div id="container"></div>
+<div id="r-result"></div>
+</body>
+</html>
+
+
+<!-- 		function resetMark()
+		{
+			//map.clearOverlays();
+			if(Overlay===null)
+			{
+				let myIcon = new BMap.Icon("location.gif", new BMap.Size(128, 128));
+				myIcon.setSize(new BMap.Size(32, 32));
+				myIcon.setImageSize(new BMap.Size(32,32))
+				Overlay = new BMap.Marker(map.getCenter(), {
+				    icon: myIcon
+				});
+				// 将标注添加到地图
+				map.addOverlay(Overlay);
+			}else(Overlay.setPosition(map.getCenter()));
+		
+		} -->
+		
