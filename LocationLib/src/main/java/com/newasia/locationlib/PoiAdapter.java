@@ -12,22 +12,90 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
-public class PoiAdapter extends BaseQuickAdapter<PoiAdapter.PoiItem, BaseViewHolder>
+public class PoiAdapter extends BaseQuickAdapter<PoiItem, BaseViewHolder>
 {
+    private int mSelectedIndex = -1;
+    private OnItemSelectListener mSelectListener;
+
+    public interface OnItemSelectListener
+    {
+        void onSelect(int index);
+    }
+
+
     public PoiAdapter() {
         super(R.layout.poi_item_layout);
+
+        setOnItemClickListener((adapter, view, position) -> {
+            if(position!=mSelectedIndex)
+            {
+                int last = mSelectedIndex;
+                mSelectedIndex = position;
+                notifyItemChanged(last);
+                notifyItemChanged(position);
+                if(mSelectListener!=null)
+                {
+                    mSelectListener.onSelect(position);
+                }
+            }
+        });
     }
+
+
+
+    public void setOnItemSelectListener(OnItemSelectListener listener)
+    {
+        mSelectListener = listener;
+    }
+
+
+    public void selectItem(int pos)
+    {
+        if(pos>=0 && pos<getItemCount())
+        {
+            int last = mSelectedIndex;
+            mSelectedIndex = pos;
+            notifyItemChanged(pos);
+            if(last!=-1) notifyItemChanged(last);
+        }
+    }
+
+
+
+
+    public PoiItem getSelectItem()
+    {
+        PoiItem retItem =null;
+        if(mSelectedIndex>=0 && mSelectedIndex<getItemCount())
+        {
+            retItem = getItem(mSelectedIndex);
+        }
+
+        return retItem;
+    }
+
 
     @Override
     protected void convert(@NotNull BaseViewHolder holder, PoiItem item)
     {
         holder.setText(R.id.poi_title,item.title);
         holder.setText(R.id.poi_addr,item.distance+"m|"+item.addr);
+
+        //根据选择 是否显示图标
+        if(holder.getAdapterPosition()==mSelectedIndex) holder.setVisible(R.id.img_selected,true);
+        else holder.setVisible(R.id.img_selected,false);
+    }
+
+    public void clearAllData()
+    {
+        mSelectedIndex = -1;
+        getData().clear();
+        notifyDataSetChanged();
     }
 
     public void addDatas(JSONArray array)
     {
-        getData().clear();
+        clearAllData();
         ArrayList<PoiItem> dataList = new ArrayList<>();
         try
         {
@@ -38,6 +106,8 @@ public class PoiAdapter extends BaseQuickAdapter<PoiAdapter.PoiItem, BaseViewHol
                 item.title = obj.getString("title");
                 item.addr = obj.getString("addr");
                 item.distance = (int)obj.getDouble("distance");
+                item.lng = obj.getDouble("lng");
+                item.lat = obj.getDouble("lat");
                 dataList.add(item);
             }
         }catch (JSONException e){e.printStackTrace();}
@@ -55,10 +125,4 @@ public class PoiAdapter extends BaseQuickAdapter<PoiAdapter.PoiItem, BaseViewHol
         notifyDataSetChanged();
     }
 
-    public static class PoiItem
-    {
-        public String title = "";
-        public String addr = "";
-        public int distance = 0;
-    }
 }

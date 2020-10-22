@@ -12,7 +12,9 @@
 
     <application
         android:networkSecurityConfig="@xml/network_security_config">
-        <activity android:name=".ActivityLocationGrabber"></activity>
+        <activity android:name=".ActivityLocationGrabber"
+            android:windowSoftInputMode="adjustNothing"
+            android:screenOrientation="portrait"></activity>
     </application>
 
 </manifest>

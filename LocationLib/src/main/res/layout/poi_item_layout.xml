@@ -32,6 +32,7 @@
         app:layout_constraintWidth_percent="0.9"/>
 
     <ImageView
+        android:id="@+id/img_selected"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:padding="8dp"
