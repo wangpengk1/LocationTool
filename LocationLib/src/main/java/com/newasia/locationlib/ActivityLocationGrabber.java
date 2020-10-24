@@ -1,23 +1,17 @@
 package com.newasia.locationlib;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
+
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.Manifest;
+
 import android.animation.ValueAnimator;
-import android.app.Activity;
+
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.os.Build;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
@@ -28,33 +22,23 @@ import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowManager;
-import android.webkit.GeolocationPermissions;
 import android.webkit.JavascriptInterface;
-import android.webkit.JsResult;
-import android.webkit.ValueCallback;
-import android.webkit.WebChromeClient;
-import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.LinearLayout;
-import android.widget.Toast;
+
 
 import com.bumptech.glide.Glide;
 import com.newasia.locationlib.databinding.ActivityLocationGrabberBinding;
-import com.xuexiang.xutil.XUtil;
+
 import com.xuexiang.xutil.common.StringUtils;
 import com.xuexiang.xutil.display.DensityUtils;
-import com.xuexiang.xutil.net.NetworkUtils;
 import com.xuexiang.xutil.system.KeyboardUtils;
 import com.xuexiang.xutil.tip.ToastUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-
-public class ActivityLocationGrabber extends AppCompatActivity {
+public class ActivityLocationGrabber extends BaseLocationActivity {
 
     private ActivityLocationGrabberBinding mBinding;
     private JsBridgeInterface mJsBridge = new JsBridgeInterface();
@@ -82,73 +66,10 @@ public class ActivityLocationGrabber extends AppCompatActivity {
 
     public static Bitmap s_mapBitmap;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        XUtil.init(this);
-        if(getSupportActionBar()!=null) getSupportActionBar().hide();
-        //setStatusBarTranslucent();
-        setStatusBarColor(Color.parseColor("#40000000"));
-        mBinding = DataBindingUtil.setContentView(this,R.layout.activity_location_grabber);
-        checkPermissions();
-    }
-
-
-    public  void setStatusBarColor(int color) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-        {
-            Window window = getWindow();
-            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-            window.setStatusBarColor(color);
-        }
-    }
-
-    public void setStatusBarTranslucent()
-    {
-        WindowManager.LayoutParams localLayoutParams = getWindow().getAttributes();
-        localLayoutParams.flags = (WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS | localLayoutParams.flags);
-    }
-
-
-    private void checkPermissions()
-    {
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)!=PERMISSION_GRANTED)
-        {
-            requestPermissions();
-            return;
-        }
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)!=PERMISSION_GRANTED)
-        {
-            requestPermissions();
-            return;
-        }
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)!=PERMISSION_GRANTED)
-        {
-            requestPermissions();
-            return;
-        }
-
-
-        initViews();
-    }
-
-    private void requestPermissions()
-    {
-        ActivityCompat.requestPermissions(this,new String[]{
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-        },REQUEST_PERMISSION_CODE);
-    }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if(requestCode==REQUEST_PERMISSION_CODE)
-        {
-            checkPermissions();
-        }
+    protected int getLayouResID() {
+        return R.layout.activity_location_grabber;
     }
 
     private Bitmap createViewSnapshot(View view) {
@@ -182,7 +103,18 @@ public class ActivityLocationGrabber extends AppCompatActivity {
     }
 
 
-    private void initViews()
+    @Override
+    protected void initDataBingding() {
+        mBinding  = DataBindingUtil.bind(mRootView);
+    }
+
+    @Override
+    protected WebView getmMapView() {
+        return mBinding.mapview;
+    }
+
+    @Override
+    protected void initViews()
     {
         //点击关闭该页面
         mBinding.cancelLabel.setOnClickListener(v -> {
@@ -281,93 +213,14 @@ public class ActivityLocationGrabber extends AppCompatActivity {
         });
 
 
+        mMapView.addJavascriptInterface(mJsBridge,"bridge");
+
+        mMapView.loadUrl("file:///android_asset/map.html");
 
     }
 
 
-    private void initMapView()
-    {
 
-        WebSettings webSettings = mBinding.mapview.getSettings();
-
-        if (NetworkUtils.isHaveInternet()) {
-            webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
-        } else {
-            webSettings.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
-        }
-        webSettings.setJavaScriptEnabled(true);
-        webSettings.setJavaScriptCanOpenWindowsAutomatically(true);
-        webSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
-        webSettings.setDomStorageEnabled(true);
-        webSettings.setDatabaseEnabled(true);
-        webSettings.setAppCacheEnabled(true);
-        webSettings.setAllowFileAccess(true);
-        webSettings.setSavePassword(true);
-        webSettings.setSupportZoom(true);
-        webSettings.setBuiltInZoomControls(true);
-        webSettings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.NARROW_COLUMNS);
-        webSettings.setUseWideViewPort(true);
-        webSettings.setBlockNetworkImage(false);
-
-        mBinding.mapview.addJavascriptInterface(mJsBridge,"bridge");
-
-        enableLoactionAssist();
-
-        mBinding.mapview.loadUrl("file:///android_asset/map.html");
-    }
-
-
-    private void enableLoactionAssist()
-    {
-        mBinding.mapview.setWebChromeClient(new WebChromeClient() {
-            // 处理javascript中的alert
-            public boolean onJsAlert(WebView view, String url, String message,
-                                     final JsResult result) {
-                return false;
-            }
-            // 处理javascript中的confirm
-            public boolean onJsConfirm(WebView view, String url,
-                                       String message, final JsResult result) {
-                return false;
-            }
-            // 处理定位权限请求
-            @Override
-            public void onGeolocationPermissionsShowPrompt(String origin,
-                                                           GeolocationPermissions.Callback callback) {
-                callback.invoke(origin, true, false);
-                super.onGeolocationPermissionsShowPrompt(origin, callback);
-            }
-            @Override
-            // 设置网页加载的进度条
-            public void onProgressChanged(WebView view, int newProgress) {
-                super.onProgressChanged(view, newProgress);
-            }
-            // 设置应用程序的标题title
-            public void onReceivedTitle(WebView view, String title) {
-                super.onReceivedTitle(view, title);
-            }
-
-
-        });
-
-
-    }
-
-
-    private void callJs(String script) {
-        if(StringUtils.isEmpty(script)) return;
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
-            mBinding.mapview.loadUrl(script);
-        } else {
-            mBinding.mapview.evaluateJavascript(script, new ValueCallback<String>() {
-                @Override
-                public void onReceiveValue(String value) {
-                    //此处为 js 返回的结果
-                }
-            });
-
-        }
-    }
 
 
     //JS调用Java的接口

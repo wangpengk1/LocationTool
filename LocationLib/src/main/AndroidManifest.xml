@@ -17,6 +17,7 @@
             android:screenOrientation="portrait"></activity>
 
         <activity android:name=".ActivityShowLocation" android:screenOrientation="portrait"/>
+        <activity android:name=".ActivityLocationLimit" android:screenOrientation="portrait"/>
     </application>
 
 </manifest>
