@@ -86,7 +86,7 @@ public class ActivityLocationGrabber extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         XUtil.init(this);
-        getSupportActionBar().hide();
+        if(getSupportActionBar()!=null) getSupportActionBar().hide();
         //setStatusBarTranslucent();
         setStatusBarColor(Color.parseColor("#40000000"));
         mBinding = DataBindingUtil.setContentView(this,R.layout.activity_location_grabber);
