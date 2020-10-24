@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.ImageView;
 
 import com.newasia.locationlib.ActivityLocationGrabber;
+import com.newasia.locationlib.ActivityShowLocation;
 import com.newasia.locationlib.PoiItem;
 
 public class MainActivity extends AppCompatActivity {
@@ -29,6 +30,8 @@ public class MainActivity extends AppCompatActivity {
 
             Intent intent = new Intent(this, ActivityLocationGrabber.class);
             startActivityForResult(intent,ActivityLocationGrabber.REQUEST_LOCATION_OPEN);
+
+
         });
     }
 
@@ -43,7 +46,15 @@ public class MainActivity extends AppCompatActivity {
                 ImageView imageView = findViewById(R.id.show_image);
                 imageView.setImageBitmap(ActivityLocationGrabber.s_mapBitmap);
             }
-            Log.e("test",item.title);
+
+            Intent intent = new Intent(this, ActivityShowLocation.class);
+            intent.putExtra(ActivityShowLocation.OPEN_PARAM_TITLE,item.title);
+            intent.putExtra(ActivityShowLocation.OPEN_PARAM_ADDRESS,item.addr);
+            intent.putExtra(ActivityShowLocation.OPEN_PARAM_LAT,item.lat);
+            intent.putExtra(ActivityShowLocation.OPEN_PARAM_LNG,item.lng);
+            Log.e("test",item.lat+" "+item.lng);
+            startActivity(intent);
+
         }
     }
 

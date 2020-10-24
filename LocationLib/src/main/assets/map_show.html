@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <!--    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> -->
+    <meta http-equiv="Content-Type" content="text/html;charset=gb2312">
+    <meta id="viewport" name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,minimal-ui">
+    <title>Hello, World</title>
+    <style type="text/css">
+		html{height:100%}
+		body{height:100%;margin:0px;padding:0px}
+		#container{height:100%}
+	</style>
+    <script type="text/javascript" src="http://api.map.baidu.com/api?v=3.0&ak=lWC5WZ8jQnNHKQhdfoGRoXUd53kzF4Pm"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lodash@4.13.1/lodash.min.js"></script>
+    <script type="text/javascript">
+		var map = new Object;
+		function loadMap()
+		{
+			map = new BMap.Map("container");
+			var point = null;
+
+			var geolocationControl = new BMap.GeolocationControl();
+			geolocationControl.addEventListener("locationSuccess",onLocationSuccess);
+			geolocationControl.addEventListener("locationError",onLocationFailed);
+			map.addControl(geolocationControl);
+			//geolocationControl.location();
+
+
+		}
+
+
+		function onLocationSuccess(e)
+		{
+			var point = e.point;
+			window.localStorage.setItem("lng",point.lng);
+			window.localStorage.setItem("lat",point.lat);
+			map.centerAndZoom(e.point,16);
+		}
+		
+		function moveTo(lat,lng)
+		{
+			map.clearOverlays();
+			var pt = new BMap.Point(lng,lat);
+			map.centerAndZoom(pt,18);
+			// 创建小车图标
+			var myIcon = new BMap.Icon("./location.gif",new BMap.Size(26, 26));
+			myIcon.setSize(new BMap.Size(128,128));
+			myIcon.setImageSize(new BMap.Size(26,26));
+			// 创建Marker标注，使用小车图标
+			
+			var marker = new BMap.Marker(pt, {
+			    icon: myIcon
+			});
+			// 将标注添加到地图
+			map.addOverlay(marker);
+		}
+		
+		
+		function onLocationFailed(e)
+		{
+			alert("定位失败");
+		}
+
+
+		function showAlert(val)
+		{
+			alert(val);
+		}
+
+	</script>
+</head>
+
+<body onload="loadMap()">
+<div id="container"></div>
+<div id="r-result"></div>
+</body>
+</html>
