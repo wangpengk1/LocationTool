@@ -11,7 +11,7 @@
 		body{height:100%;margin:0px;padding:0px}
 		#container{height:100%}
 	</style>
-    <script type="text/javascript" src="http://api.map.baidu.com/api?v=3.0&ak=lWC5WZ8jQnNHKQhdfoGRoXUd53kzF4Pm"></script>
+    <script type="text/javascript" src="https://api.map.baidu.com/api?v=3.0&ak=lWC5WZ8jQnNHKQhdfoGRoXUd53kzF4Pm"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lodash@4.13.1/lodash.min.js"></script>
     <script type="text/javascript">
 		var map = new Object;
@@ -24,7 +24,7 @@
 			geolocationControl.addEventListener("locationSuccess",onLocationSuccess);
 			geolocationControl.addEventListener("locationError",onLocationFailed);
 			map.addControl(geolocationControl);
-			
+			//map.centerAndZoom(new BMap.Point(116.404, 39.915), 12);
 			geolocationControl.location();
 		}
 		
@@ -34,6 +34,7 @@
 			console.log(e);
 			var point = e.point;
 			moveTo(point.lat,point.lng);
+			window.bridge.log("location sucess");
 			window.bridge.locationSucceeded();
 		}
 
@@ -41,6 +42,8 @@
 
 		function onLocationFailed(e)
 		{
+		    window.bridge.log("location failed");
+		    console.log(e);
 			alert('¶¨Î»Ê§°Ü');
 		}
 

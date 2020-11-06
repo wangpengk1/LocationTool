@@ -10,7 +10,6 @@ import android.view.View;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.databinding.DataBindingUtil;
 
 import com.newasia.locationlib.databinding.ActivityLocationLimitLayoutBinding;
@@ -21,7 +20,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 
-public class ActivityLocationLimit extends BaseLocationActivity
+public class
+ActivityLocationLimit extends BaseLocationActivity
 {
     public static Bitmap s_ResultBitmap;
 
@@ -154,4 +154,10 @@ public class ActivityLocationLimit extends BaseLocationActivity
         }
     }
 
+
+    @Override
+    protected void onWebPageFinsied(WebView view, String url) {
+        super.onWebPageFinsied(view, url);
+        Log.e("test","Load finished");
+    }
 }
